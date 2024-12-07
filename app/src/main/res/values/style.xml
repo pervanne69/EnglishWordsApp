@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TextViewTextSizeAndColor">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/textVariantsColor</item>
+    </style>
+    <style name="TextViewVariantsStyle" parent="TextViewTextSizeAndColor">
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">8dp</item>
+    </style>
+
+    <style name="TextViewVariantsNumberStyle" parent="TextViewTextSizeAndColor">
+        <item name="android:fontFamily">@font/nunito_semibold</item>
+        <item name="android:textColor">@color/textVariantsColor</item>
+        <item name="android:background">@drawable/shape_rounded_variants</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginStart">12dp</item>
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+    </style>
+</resources>

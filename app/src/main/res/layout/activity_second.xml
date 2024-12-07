@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/second"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="4"
+    >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" />
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:layout_gravity="end|center_vertical"
+        android:gravity="bottom|center_vertical"
+        android:text="Yes Pick me"
+        android:layout_weight="1"
+        tools:ignore="HardcodedText" />
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="70dp"
+        android:text="Push me"
+        android:layout_weight="1"
+        tools:ignore="HardcodedText" />
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="70dp"
+        android:text="Yes Pick me"
+        android:layout_weight="1"
+        tools:ignore="HardcodedText" />
+
+
+</LinearLayout>
+
+<!--
+    Views
+    Frame - работает как стэк - элементы накладываются друг на друга
+    Linear
+    Constraint
+    Margin - внешние отступы
+    Padding = внутрениие отступы
+    gravity vs layout_gravity
+-->
