@@ -10,7 +10,11 @@ import android.transition.TransitionManager
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
+import androidx.core.view.accessibility.AccessibilityEventCompat.ContentChangeType
 import androidx.core.view.isVisible
+
+
+// Подкорректировать layouts
 
 
 class MainActivity : AppCompatActivity() {
@@ -44,12 +48,43 @@ class MainActivity : AppCompatActivity() {
             layoutAnswer1.setOnClickListener {
                 markAnswerWrong()
             }
-//            btnResult.setOnClickListener {
-//                transitionBetweenBtnAndLayout(btnSkip, layoutResult)
-//            }
+            btnResult.setOnClickListener {
+                makeAnswerNeutral()
+            }
         }
 
 
+    }
+
+    private fun makeAnswerNeutral() {
+        with (binding) {
+            for (layout in listOf(layoutAnswer3, layoutAnswer1)) {
+                 layout.background = ContextCompat.getDrawable(
+                     this@MainActivity,
+                     R.drawable.shape_rounded_containers
+                 )
+            }
+            for (textView in listOf(tvVariantValue1, tvVariantValue3)) {
+                textView.setTextColor(ContextCompat.getColor(
+                    this@MainActivity,
+                    R.color.textVariantsColor
+                ))
+            }
+
+            for (textView in listOf(tvVariantNumber1, tvVariantNumber3)) {
+                textView.apply{
+                    background = ContextCompat.getDrawable(
+                        this@MainActivity,
+                        R.drawable.shape_rounded_variants
+                    )
+                    setTextColor(ContextCompat.getColor(
+                        this@MainActivity,
+                        R.color.textVariantsColor
+                    ))
+                }
+            }
+            transitionBetweenButtons(btnResult, btnSkip)
+        }
     }
 
     private fun markAnswerWrong() {
@@ -132,31 +167,17 @@ class MainActivity : AppCompatActivity() {
 
         TransitionManager.beginDelayedTransition(binding.root, transition)
 
-        element1.isVisible = !element1.isVisible
-        element2.isVisible = !element1.isVisible
+        element1.isVisible = false
+        element2.isVisible = true
+    }
+
+    private fun transitionBetweenButtons(element1: Button, element2: Button) {
+        val transition = Slide(Gravity.START)
+
+        TransitionManager.beginDelayedTransition(binding.root, transition)
+
+        element1.isVisible = false
+        element2.isVisible = true
     }
 
 }
-
-
-// findViewById
-// ViewBinding - генерирует привязку для каждого файла в разметке в проекте
-// что позволяет получить доступ к элементам разметки через этот объект
-// создается только один раз при создрании Activity
-
-// findViewById
-//        val tvQuestionWord: TextView = findViewById(R.id.tvQuestionWord)
-//        tvQuestionWord.text = "52"
-//        tvQuestionWord.setTextColor(Color.BLUE)
-//        tvQuestionWord.setTextColor(Color.parseColor("#000000"))
-//        tvQuestionWord.setTextColor(ContextCompat.getColor(this, R.color.questionWordTitle))
-// this - контекст текущей Activity
-
-// ViewBinding
-
-
-//        with (binding) {
-//            tvQuestionWord.text = "AndroidSprint.ru"
-//            tvQuestionWord.setTextColor(Color.GRAY)
-//            imageButton.isVisible = false
-//        }
