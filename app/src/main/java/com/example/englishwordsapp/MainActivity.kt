@@ -7,17 +7,16 @@ import androidx.core.content.ContextCompat
 import com.example.englishwordsapp.databinding.ActivityLearnWordBinding
 import android.transition.Slide
 import android.transition.TransitionManager
+import android.util.Log
 import android.view.Gravity
 import android.view.View
-import android.widget.Button
-import androidx.core.view.accessibility.AccessibilityEventCompat.ContentChangeType
+import android.view.ViewGroup
+import android.widget.TextView
+import android.widget.LinearLayout
 import androidx.core.view.isVisible
 
-
-// Подкорректировать layouts
-
-
 class MainActivity : AppCompatActivity() {
+    private var isAnswerSelected = false
     private var _binding: ActivityLearnWordBinding? = null
     private val binding
         get() = _binding
@@ -37,147 +36,227 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         enableEdgeToEdge()
 
-        // нейтральный ответ
-        // корректный ответ
-        // некорректный ответ
-
         with(binding) {
+            btnResult.setOnClickListener {
+                makeAnswerNeutral(
+                    layoutAnswer1,
+                    tvVariantValue1,
+                    tvVariantNumber1
+                )
+                makeAnswerNeutral(
+                    layoutAnswer3,
+                    tvVariantValue3,
+                    tvVariantNumber3
+                )
+            }
             layoutAnswer3.setOnClickListener {
-                markAnswerCorrect()
+                markAnswerCorrect(
+                    layoutAnswer3,
+                    tvVariantValue3,
+                    tvVariantNumber3
+                )
             }
             layoutAnswer1.setOnClickListener {
-                markAnswerWrong()
-            }
-            btnResult.setOnClickListener {
-                makeAnswerNeutral()
+                markAnswerWrong(
+                    layoutAnswer1,
+                    tvVariantValue1,
+                    tvVariantNumber1
+                )
             }
         }
 
 
     }
 
-    private fun makeAnswerNeutral() {
-        with (binding) {
-            for (layout in listOf(layoutAnswer3, layoutAnswer1)) {
-                 layout.background = ContextCompat.getDrawable(
-                     this@MainActivity,
-                     R.drawable.shape_rounded_containers
-                 )
-            }
-            for (textView in listOf(tvVariantValue1, tvVariantValue3)) {
-                textView.setTextColor(ContextCompat.getColor(
+    private fun makeAnswerNeutral(
+        layoutAnswer: LinearLayout,
+        tvVariantValue: TextView,
+        tvVariantNumber: TextView
+    ) {
+        Log.d("MainActivity", "makeAnswerNeutral called")
+        layoutAnswer.background = ContextCompat.getDrawable(
+            this@MainActivity,
+            R.drawable.shape_rounded_containers,
+        )
+
+        tvVariantValue.setTextColor(
+            ContextCompat.getColor(
+                this@MainActivity,
+                R.color.textVariantsColor
+            )
+        )
+
+        tvVariantNumber.apply {
+            background = ContextCompat.getDrawable(
+                this@MainActivity,
+                R.drawable.shape_rounded_variants
+            )
+            setTextColor(
+                ContextCompat.getColor(
                     this@MainActivity,
                     R.color.textVariantsColor
-                ))
-            }
-
-            for (textView in listOf(tvVariantNumber1, tvVariantNumber3)) {
-                textView.apply{
-                    background = ContextCompat.getDrawable(
-                        this@MainActivity,
-                        R.drawable.shape_rounded_variants
-                    )
-                    setTextColor(ContextCompat.getColor(
-                        this@MainActivity,
-                        R.color.textVariantsColor
-                    ))
-                }
-            }
-            transitionBetweenButtons(btnResult, btnSkip)
+                )
+            )
+        }
+        with(binding) {
+            isAnswerSelected = false
+            val parentLayout = findViewById<ViewGroup>(R.id.layoutAnswers)
+            val layoutAnswers = getInnerLayouts(parentLayout)
+            enableAnswerClicks(layoutAnswers)
+            transitionBetweenLayouts(layoutResult, btnSkip)
         }
     }
 
-    private fun markAnswerWrong() {
-        with(binding) {
-            layoutAnswer1.background = ContextCompat.getDrawable(
-                this@MainActivity,
-                R.drawable.shape_rounded_containers_wrong
-            )
-            tvVariantNumber1.background = ContextCompat.getDrawable(
-                this@MainActivity,
-                R.drawable.shape_rounded_variants_wrong
-            )
-            tvVariantNumber1.setTextColor(ContextCompat.getColor(
+    private fun markAnswerWrong(
+        layoutAnswer: LinearLayout,
+        tvVariantValue: TextView,
+        tvVariantNumber: TextView
+    ) {
+        Log.d("MainActivity", "makeAnswerWrong called")
+        if (isAnswerSelected) return
+        layoutAnswer.background = ContextCompat.getDrawable(
+            this@MainActivity,
+            R.drawable.shape_rounded_containers_wrong
+        )
+        tvVariantNumber.background = ContextCompat.getDrawable(
+            this@MainActivity,
+            R.drawable.shape_rounded_variants_wrong
+        )
+        tvVariantNumber.setTextColor(
+            ContextCompat.getColor(
                 this@MainActivity,
                 R.color.white
-            ))
-            tvVariantValue1.setTextColor(ContextCompat.getColor(
+            )
+        )
+        tvVariantValue.setTextColor(
+            ContextCompat.getColor(
                 this@MainActivity,
                 R.color.wrongAnswerColor
-            ))
-            layoutResult.setBackgroundColor(ContextCompat.getColor(
-                this@MainActivity,
-                R.color.wrongAnswerColor
-            ))
-
-            ivResultIcon.setImageDrawable(ContextCompat.getDrawable(
-                this@MainActivity,
-                R.drawable.ic_wrong
-            ))
+            )
+        )
+        with(binding) {
+            layoutResult.setBackgroundColor(
+                ContextCompat.getColor(
+                    this@MainActivity,
+                    R.color.wrongAnswerColor
+                )
+            )
+            ivResultIcon.setImageDrawable(
+                ContextCompat.getDrawable(
+                    this@MainActivity,
+                    R.drawable.ic_wrong
+                )
+            )
             tvResultTitle.text = resources.getString(R.string.title_wrong)
-            btnResult.setTextColor(ContextCompat.getColor(
-                this@MainActivity,
-                R.color.wrongAnswerColor
-            ))
-            transitionBetweenBtnAndLayout(btnSkip, layoutResult)
+            btnResult.setTextColor(
+                ContextCompat.getColor(
+                    this@MainActivity,
+                    R.color.wrongAnswerColor
+                )
+            )
+            isAnswerSelected = true
+            val parentLayout = findViewById<ViewGroup>(R.id.layoutAnswers)
+            val layoutAnswers = getInnerLayouts(parentLayout)
+            disableAnswerClicks(layoutAnswers)
+            transitionBetweenLayouts(btnSkip, layoutResult)
         }
     }
 
-    private fun markAnswerCorrect() {
-        with(binding) {
-            layoutAnswer3.background = ContextCompat.getDrawable(
-                this@MainActivity,
-                R.drawable.shape_rounded_containers_correct
-            )
-            tvVariantNumber3.background = ContextCompat.getDrawable(
-                this@MainActivity,
-                R.drawable.shape_rounded_variants_correct
-            )
-            tvVariantNumber3.setTextColor(ContextCompat.getColor(
+    private fun markAnswerCorrect(
+        layoutAnswer: LinearLayout,
+        tvVariantValue: TextView,
+        tvVariantNumber: TextView
+    ) {
+        Log.d("MainActivity", "makeAnswerCorrect called")
+        if (isAnswerSelected) return
+        layoutAnswer.background = ContextCompat.getDrawable(
+            this@MainActivity,
+            R.drawable.shape_rounded_containers_correct
+        )
+        tvVariantNumber.background = ContextCompat.getDrawable(
+            this@MainActivity,
+            R.drawable.shape_rounded_variants_correct
+        )
+        tvVariantNumber.setTextColor(
+            ContextCompat.getColor(
                 this@MainActivity,
                 R.color.white
-            ))
-            tvVariantValue3.setTextColor(ContextCompat.getColor(
+            )
+        )
+        tvVariantValue.setTextColor(
+            ContextCompat.getColor(
                 this@MainActivity,
                 R.color.correctAnswerColor
-            ))
+            )
+        )
+        with(binding) {
+            layoutResult.setBackgroundColor(
+                ContextCompat.getColor(
+                    this@MainActivity,
+                    R.color.correctAnswerColor
+                )
+            )
 
-            layoutResult.setBackgroundColor(ContextCompat.getColor(
-                this@MainActivity,
-                R.color.correctAnswerColor
-            ))
-
-            ivResultIcon.setImageDrawable(ContextCompat.getDrawable(
-                this@MainActivity,
-                R.drawable.ic_correct
-            ))
+            ivResultIcon.setImageDrawable(
+                ContextCompat.getDrawable(
+                    this@MainActivity,
+                    R.drawable.ic_correct
+                )
+            )
             tvResultTitle.text = resources.getString(R.string.title_correct)
-            btnResult.setTextColor(ContextCompat.getColor(
-                this@MainActivity,
-                R.color.correctAnswerColor
-            ))
+            btnResult.setTextColor(
+                ContextCompat.getColor(
+                    this@MainActivity,
+                    R.color.correctAnswerColor
+                )
+            )
+            isAnswerSelected = true
+            val parentLayout = findViewById<ViewGroup>(R.id.layoutAnswers)
+            val layoutAnswers = getInnerLayouts(parentLayout)
+            disableAnswerClicks(layoutAnswers)
+            transitionBetweenLayouts(btnSkip, layoutResult)
 
-
-            transitionBetweenBtnAndLayout(btnSkip, layoutResult)
         }
     }
 
-    private fun transitionBetweenBtnAndLayout(element1: Button, element2: View) {
+    private fun transitionBetweenLayouts(element1: View, element2: View) {
         val transition = Slide(Gravity.START)
 
         TransitionManager.beginDelayedTransition(binding.root, transition)
 
-        element1.isVisible = false
-        element2.isVisible = true
+        if (element1.isVisible && !element2.isVisible) {
+            element1.isVisible = false
+            element2.isVisible = true
+        } else if (!element1.isVisible && element2.isVisible) {
+            element1.isVisible = true
+            element2.isVisible = false
+        }
+
+        println(element1.isVisible)
+        println(element2.isVisible)
+
     }
 
-    private fun transitionBetweenButtons(element1: Button, element2: Button) {
-        val transition = Slide(Gravity.START)
-
-        TransitionManager.beginDelayedTransition(binding.root, transition)
-
-        element1.isVisible = false
-        element2.isVisible = true
+    private fun getInnerLayouts(parentLayout: ViewGroup): List<LinearLayout> {
+        val innerLayouts = mutableListOf<LinearLayout>()
+        for (i in 0 until parentLayout.childCount) {
+            val childView = parentLayout.getChildAt(i)
+            if (childView is LinearLayout) {
+                innerLayouts.add(childView)
+            }
+        }
+        return innerLayouts
     }
 
+    private fun disableAnswerClicks(layouts: List<LinearLayout>) {
+        for (layout in layouts) {
+            layout.isClickable = false
+        }
+    }
+
+    private fun enableAnswerClicks(layouts: List<LinearLayout>) {
+        for (layout in layouts) {
+            layout.isClickable = true
+        }
+    }
 }
