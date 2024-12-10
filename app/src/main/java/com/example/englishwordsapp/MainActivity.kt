@@ -1,6 +1,7 @@
 package com.example.englishwordsapp
 
 import android.os.Bundle
+import android.text.Layout
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -22,50 +23,93 @@ class MainActivity : AppCompatActivity() {
         get() = _binding
             ?: throw IllegalStateException("Binding for ActivityLearnWordBinding must not be null")
 
-
-    //    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
-        // результат вызова этого метода экз
-        //   емпляр класса ActivityMainBinding
-        // у которой есть ссылки на все TextView
 
         _binding = ActivityLearnWordBinding.inflate(layoutInflater)
         setContentView(binding.root)
         enableEdgeToEdge()
 
-        with(binding) {
+        val trainer = LearnWordsTrainer()
+        showNextQuestion(trainer)
+
+        with (binding) {
             btnResult.setOnClickListener {
-                makeAnswerNeutral(
-                    layoutAnswer1,
-                    tvVariantValue1,
-                    tvVariantNumber1
-                )
-                makeAnswerNeutral(
-                    layoutAnswer3,
-                    tvVariantValue3,
-                    tvVariantNumber3
-                )
+                layoutResult.isVisible = false
+                makeAnswerNeutral(layoutAnswer1, tvVariantValue1, tvVariantNumber1)
+                makeAnswerNeutral(layoutAnswer2, tvVariantValue2, tvVariantNumber2)
+                makeAnswerNeutral(layoutAnswer3, tvVariantValue3, tvVariantNumber3)
+                makeAnswerNeutral(layoutAnswer4, tvVariantValue4, tvVariantNumber4)
+                showNextQuestion(trainer)
+                isAnswerSelected = false
+
             }
-            layoutAnswer3.setOnClickListener {
-                markAnswerCorrect(
-                    layoutAnswer3,
-                    tvVariantValue3,
-                    tvVariantNumber3
-                )
-            }
-            layoutAnswer1.setOnClickListener {
-                markAnswerWrong(
-                    layoutAnswer1,
-                    tvVariantValue1,
-                    tvVariantNumber1
-                )
+            btnSkip.setOnClickListener {
+                isAnswerSelected = false
+                showNextQuestion(trainer)
             }
         }
+    }
 
+    private fun showNextQuestion(trainer: LearnWordsTrainer) {
+        val firstQuestion: Question? = trainer.getNextQuestion()
+        with (binding) {
+            if (firstQuestion == null || firstQuestion.variants.size < NUMBER_OF_ANSWERS) {
+                tvQuestionWord.isVisible = false
+                layoutAnswers.isVisible = false
+                btnSkip.text = "Complete"
+            } else {
+                btnSkip.isVisible = true
+                tvQuestionWord.isVisible = true
+                tvQuestionWord.text = firstQuestion.correctAnswer.original
 
+                tvVariantValue1.text = firstQuestion.variants[0].translate
+                tvVariantValue2.text = firstQuestion.variants[1].translate
+                tvVariantValue3.text = firstQuestion.variants[2].translate
+                tvVariantValue4.text = firstQuestion.variants[3].translate
+
+                layoutAnswer1.setOnClickListener {
+                    if (trainer.checkAnswer(0)) {
+                        markAnswerCorrect(layoutAnswer1, tvVariantValue1, tvVariantNumber1)
+                        showResultMessage(true)
+                    } else {
+                        markAnswerWrong(layoutAnswer1, tvVariantValue1, tvVariantNumber1)
+                        showResultMessage(false)
+                    }
+                }
+
+                layoutAnswer2.setOnClickListener {
+                    if (trainer.checkAnswer(1)) {
+                        markAnswerCorrect(layoutAnswer2, tvVariantValue2, tvVariantNumber2)
+                        showResultMessage(true)
+                    } else {
+                        markAnswerWrong(layoutAnswer2, tvVariantValue2, tvVariantNumber2)
+                        showResultMessage(false)
+                    }
+                }
+
+                layoutAnswer3.setOnClickListener {
+                    if (trainer.checkAnswer(2)) {
+                        markAnswerCorrect(layoutAnswer3, tvVariantValue3, tvVariantNumber3)
+                        showResultMessage(true)
+                    } else {
+                        markAnswerWrong(layoutAnswer3, tvVariantValue3, tvVariantNumber3)
+                        showResultMessage(false)
+                    }
+                }
+
+                layoutAnswer4.setOnClickListener {
+                    if (trainer.checkAnswer(3)) {
+                        markAnswerCorrect(layoutAnswer4, tvVariantValue4, tvVariantNumber4)
+                        showResultMessage(true)
+                    } else {
+                        markAnswerWrong(layoutAnswer4, tvVariantValue4, tvVariantNumber4)
+                        showResultMessage(false)
+                    }
+                }
+
+            }
+        }
     }
 
     private fun makeAnswerNeutral(
@@ -98,13 +142,6 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
-        with(binding) {
-            isAnswerSelected = false
-            val parentLayout = findViewById<ViewGroup>(R.id.layoutAnswers)
-            val layoutAnswers = getInnerLayouts(parentLayout)
-            enableAnswerClicks(layoutAnswers)
-            transitionBetweenLayouts(layoutResult, btnSkip)
-        }
     }
 
     private fun markAnswerWrong(
@@ -134,32 +171,6 @@ class MainActivity : AppCompatActivity() {
                 R.color.wrongAnswerColor
             )
         )
-        with(binding) {
-            layoutResult.setBackgroundColor(
-                ContextCompat.getColor(
-                    this@MainActivity,
-                    R.color.wrongAnswerColor
-                )
-            )
-            ivResultIcon.setImageDrawable(
-                ContextCompat.getDrawable(
-                    this@MainActivity,
-                    R.drawable.ic_wrong
-                )
-            )
-            tvResultTitle.text = resources.getString(R.string.title_wrong)
-            btnResult.setTextColor(
-                ContextCompat.getColor(
-                    this@MainActivity,
-                    R.color.wrongAnswerColor
-                )
-            )
-            isAnswerSelected = true
-            val parentLayout = findViewById<ViewGroup>(R.id.layoutAnswers)
-            val layoutAnswers = getInnerLayouts(parentLayout)
-            disableAnswerClicks(layoutAnswers)
-            transitionBetweenLayouts(btnSkip, layoutResult)
-        }
     }
 
     private fun markAnswerCorrect(
@@ -189,34 +200,6 @@ class MainActivity : AppCompatActivity() {
                 R.color.correctAnswerColor
             )
         )
-        with(binding) {
-            layoutResult.setBackgroundColor(
-                ContextCompat.getColor(
-                    this@MainActivity,
-                    R.color.correctAnswerColor
-                )
-            )
-
-            ivResultIcon.setImageDrawable(
-                ContextCompat.getDrawable(
-                    this@MainActivity,
-                    R.drawable.ic_correct
-                )
-            )
-            tvResultTitle.text = resources.getString(R.string.title_correct)
-            btnResult.setTextColor(
-                ContextCompat.getColor(
-                    this@MainActivity,
-                    R.color.correctAnswerColor
-                )
-            )
-            isAnswerSelected = true
-            val parentLayout = findViewById<ViewGroup>(R.id.layoutAnswers)
-            val layoutAnswers = getInnerLayouts(parentLayout)
-            disableAnswerClicks(layoutAnswers)
-            transitionBetweenLayouts(btnSkip, layoutResult)
-
-        }
     }
 
     private fun transitionBetweenLayouts(element1: View, element2: View) {
@@ -257,6 +240,38 @@ class MainActivity : AppCompatActivity() {
     private fun enableAnswerClicks(layouts: List<LinearLayout>) {
         for (layout in layouts) {
             layout.isClickable = true
+        }
+    }
+
+    private fun showResultMessage(isCorrect: Boolean) {
+        val color: Int
+        val messageText: String
+        val resultIconResource: Int
+        if (isCorrect) {
+            color = ContextCompat.getColor(
+                this@MainActivity,
+                R.color.correctAnswerColor
+            )
+            messageText = resources.getString(R.string.title_correct)
+            resultIconResource = R.drawable.ic_correct
+        } else {
+            color = ContextCompat.getColor(
+                this@MainActivity,
+                R.color.wrongAnswerColor
+            )
+            messageText = resources.getString(R.string.title_wrong)
+            resultIconResource = R.drawable.ic_wrong
+        }
+        with (binding) {
+            layoutResult.setBackgroundColor(color)
+            tvResultTitle.text = messageText
+            btnResult.setTextColor(color)
+            ivResultIcon.setImageResource(resultIconResource)
+            isAnswerSelected = true
+            val parentLayout = findViewById<ViewGroup>(R.id.layoutAnswers)
+            val layoutAnswers = getInnerLayouts(parentLayout)
+            disableAnswerClicks(layoutAnswers)
+            transitionBetweenLayouts(btnSkip, layoutResult)
         }
     }
 }
